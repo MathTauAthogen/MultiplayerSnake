@@ -12,7 +12,8 @@ size = 0
 
 startup = True
 
-specials_list = [["B","184"], ["P","10"]]
+specials_list = [["B","184"], ["P","10"], ["S","18"]]
+probs = [0.05,0.05,0.2]
 
 screen_width = 211 # Accurate for my own fullscreen
 
@@ -26,7 +27,23 @@ def startup(the_size, name):
     global size
     size = the_size
 
-    specials = [[1,1,"B"], [size - 2, size - 2, "B"], [2,2,"P"]]
+    #specials = [[1,1,"B"], [size - 2, size - 2, "B"], [2,2,"P"]]
+
+    specials = []
+    
+    cutoffs = [sum(probs[:i]) for i in range(len(probs))]
+
+    for i in range(size):
+        for j in range(size):
+            if i == j and (i == 0 or i == size - 1):
+                continue
+            else:
+                which = random.random()
+                for ind, k in enumerate(cutoffs):
+                    if which <= k:
+                        specials += [[i,j, specials_list[ind][0]]]
+                        break
+                        
 
     init_grid = [[[[" "," "],[" ", " "], [""], [""]] for j in range(size)] for i in range(size)]
 
@@ -165,6 +182,8 @@ def validate_space(x, y, grid, oldx, oldy):
 def checkspace(x, y, grid):
     if(grid[x][y][0][0] == " "):
         return "safe"
+    if(grid[x][y][0][0] == "S"):
+        return "unsafe"
     if(grid[x][y][0][0] != grid[x][y][0][0].lower() and grid[x][y][1][0] == " "):
         return "special"
     return "unsafe"
