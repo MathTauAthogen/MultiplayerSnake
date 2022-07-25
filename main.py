@@ -62,6 +62,21 @@ except:
 size = int(log_input("How big do you want your grids? "))
 
 while True:
+    power_pellet_turns = 0
+    power_pellet_moves = 0
+    power_pellet_max_moves = 1
+    power_pellet_max_turns = 2
+    power_pellet_done = False
+
+    power_pellet_turns_opp = 0
+    power_pellet_moves_opp = 0
+    power_pellet_done_opp = False
+
+    special_flag_B = False
+
+    special_flag_B_opp = False
+
+
     bots = log_input("Would you like to play, or just watch bots play? (b = bots, anything else = you) ")
 
     if (bots.lower() == "b"):
@@ -100,7 +115,7 @@ while True:
         turns(turncount)
         print_grid(grid)
 
-        if(not special_flag_B_opp and power_pellet_moves_opp == 0):
+        if(not special_flag_B_opp and (power_pellet_moves_opp == 0 or power_pellet_done_opp)):
             turncount += 1
             oldx = x
             oldy = y
@@ -198,24 +213,25 @@ while True:
                     power_pellet_done = False
                 
         else:
-            will_cont_opp = False
-            special_turn_opp = False
-            if (special_flag_B_opp):
+            pass
+        will_cont_opp = False
+        special_turn_opp = False
+        if (special_flag_B_opp):
+            special_turn_opp = True
+        special_flag_B_opp = False
+        if(not power_pellet_done_opp and not special_turn_opp):
+            if(power_pellet_moves_opp > 0):
+                power_pellet_moves_opp -= 1
+            if(power_pellet_moves_opp == 0 and power_pellet_turns_opp > 0):
+                power_pellet_turns_opp -= 1
+            if (power_pellet_turns_opp > 0 and power_pellet_moves_opp == 0):
+                power_pellet_moves_opp = power_pellet_max_moves
+                power_pellet_done_opp = True
+            if (will_cont_opp):
                 special_turn_opp = True
-            special_flag_B_opp = False
-            if(not power_pellet_done_opp and not special_turn_opp):
-                if(power_pellet_moves_opp > 0):
-                    power_pellet_moves_opp -= 1
-                if(power_pellet_moves_opp == 0 and power_pellet_turns_opp > 0):
-                    power_pellet_turns_opp -= 1
-                if (power_pellet_turns_opp > 0 and power_pellet_moves_opp == 0):
-                    power_pellet_moves_opp = power_pellet_max_moves
-                    power_pellet_done_opp = True
-                if (will_cont_opp):
-                    special_turn_opp = True
-            else:
-                if not special_turn_opp:
-                    power_pellet_done_opp = False
+        else:
+            if not special_turn_opp:
+                power_pellet_done_opp = False
         
         flag = False
 
