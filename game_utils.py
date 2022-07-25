@@ -3,6 +3,7 @@ import random
 import sys
 import time
 import math
+import threading
 
 #### STARTUP
 
@@ -19,10 +20,15 @@ screen_width = 211 # Accurate for my own fullscreen
 
 turn = 0
 
+myname = ""
+
 def turns(count):
+    global turn
     turn = count
 
 def startup(the_size, name):
+    global myname
+    myname = name
     startup = False
     global size
     size = the_size
@@ -98,6 +104,8 @@ def print_grid (grid):
     width = len(grid[0])
     all_background = "202";
     borders = "22";
+    me = "210";
+    opp = "226";
     turncolor = "171";
     print("\033[48;5;" + all_background + "m", end="")
     for i in range(height):
@@ -113,6 +121,8 @@ def print_grid (grid):
         for k in range(4):
             strings[k] = strings[k].replace(str(turn), "\033[38;5;" + turncolor + "m"+ str(turn) +"\033[38;5;0m")
             strings[k] = strings[k].replace("|", "\033[38;5;" + borders + "m|\033[38;5;0m")
+            strings[k] = strings[k].replace("@", "\033[38;5;" + opp + "m@\033[38;5;0m")
+            strings[k] = strings[k].replace(myname, "\033[38;5;" + me + "m"+ myname +"\033[38;5;0m")
 
             for j in specials_list:
                 strings[k] = strings[k].replace(j[0], "\033[38;5;"+ j[1] + "m" + j[0]+"\033[38;5;0m")
@@ -161,7 +171,9 @@ def get_player(x,y,grid):
         if grid[x][y][0][0].lower() == grid[x][y][0][0]:
             return grid[x][y][0][0]
         else:
-            return grid[x][y][1][0]
+            if(grid[x][y][0][0] != "S"):
+                return grid[x][y][1][0]
+            return "none"
 
 def get_turn(x,y,grid):
     if checkspace(x,y,grid) != "unsafe":
@@ -172,7 +184,9 @@ def get_turn(x,y,grid):
                 return 0
             return int(grid[x][y][0][1])
         else:
-            return int(grid[x][y][1][1])
+            if (grid[x][y][0][0] != "S"):
+                return int(grid[x][y][1][1])
+            return "none"
 
 def validate_space(x, y, grid, oldx, oldy):
     if(checkspace(x,oldy, grid) == "unsafe" and checkspace(oldx, y, grid) == "unsafe" and get_player(x,oldy,grid) == get_player(oldx,y,grid) and get_player(oldx, y, grid) != "none" and abs(get_turn(oldx, y, grid) - get_turn(x,oldy, grid)) <= 1):
