@@ -4,6 +4,8 @@ import sys
 import time
 import math
 import threading
+import psutil
+import subprocess
 
 #### STARTUP
 
@@ -21,6 +23,28 @@ screen_width = 211 # Accurate for my own fullscreen
 turn = 0
 
 myname = ""
+
+running_pids = []
+
+### THE BELOW FUNCTION IS SHAMELESS COPY-PASTE FROM THE INTERNET (lightly edited)
+
+def kill_all_child_processes(pid=None):
+    # get current process if pid not provided
+    include_parent = True
+    if not pid:
+        pid = os.getpid()
+        include_parent = False
+    try:
+        parent = psutil.Process(pid)
+    except psutil.Error:
+        # could not find parent process id
+        return
+    for child in parent.children(recursive=True):
+        child.kill()
+    if include_parent:
+        parent.kill() 
+
+### END SHAMELESS COPY PASTE
 
 def turns(count):
     global turn
@@ -65,18 +89,23 @@ def startup(the_size, name):
 #### LOGGING
 
 def log_input(string):
+    kill_all_child_processes()
     global log
     t = time.localtime()
     current_time = time.strftime("%H:%M:%S", t)
     if not startup:
         print_grid(init_grid)
-    a = input(current_time + " " * 7 + string)
+    print(current_time + " " * 7 + string,end = "")
+    sys.stdout.flush()
+    subprocess.Popen(["google_speech", "-l", "en-uk" ,"\""+string+"\"" ,"-v","warning"])
+    a = input("")
     log += [[current_time, string + a]]
     if len(log) > 10:
         log[:] = log[1:]
     return a
 
 def log_print(string):
+    kill_all_child_processes()
     #all_background = "208"
     #text_color = "46"
     #print("\033[48;5;"+ all_background +"m")
@@ -92,6 +121,10 @@ def log_print(string):
     #print("\033[38;5;" + text_color + "m" + print_string + "\033[38;5;0m")
 
     print(print_string)
+    sys.stdout.flush()
+
+    subprocess.Popen(["google_speech", "-l", "en-uk" ,"\""+string+"\"" ,"-v","warning"])
+
     log += [[current_time, string]]
     if len(log) > 10:
         log[:] = log[1:]
@@ -105,6 +138,8 @@ def print_grid (grid):
     all_background = "202";
     borders = "22";
     me = "210";
+    background_me = "";
+    background_opp = "";
     opp = "226";
     turncolor = "171";
     print("\033[48;5;" + all_background + "m", end="")
@@ -120,9 +155,15 @@ def print_grid (grid):
 
         for k in range(4):
             strings[k] = strings[k].replace(str(turn), "\033[38;5;" + turncolor + "m"+ str(turn) +"\033[38;5;0m")
-            strings[k] = strings[k].replace("|", "\033[38;5;" + borders + "m|\033[38;5;0m")
+            strings[k] = strings[k].replace("|", "\033[48;5;"+all_background+"m\033[38;5;" + borders + "m|\033[38;5;0m\033[48;5;"+all_background+"m")
+            oldstring = strings[k] #TODO: Find a way to implement highlighting each square in its colour based on player
             strings[k] = strings[k].replace("@", "\033[38;5;" + opp + "m@\033[38;5;0m")
+            if strings[k] != oldstring:
+                pass
+            oldstring = strings[k]
             strings[k] = strings[k].replace(myname, "\033[38;5;" + me + "m"+ myname +"\033[38;5;0m")
+            if strings[k] != oldstring:
+                pass
 
             for j in specials_list:
                 strings[k] = strings[k].replace(j[0], "\033[38;5;"+ j[1] + "m" + j[0]+"\033[38;5;0m")

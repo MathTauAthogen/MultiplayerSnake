@@ -1,3 +1,14 @@
+### Minor bug log ###
+
+### 1. The opponent uses all of its turns worth of power pellet on one turn - RESOLVED
+### 2. The turn counter on the display is highlighting out of sync - NOT STARTED
+### 3. The opponent waits a second between power pellet moves but the you-bot player doesn't - NOT STARTED
+
+
+
+
+
+
 from opp_strat import *
 from game_utils import *
 
@@ -124,6 +135,7 @@ while True:
             if not checkPossible(x, y, grid):
                 print_grid(grid)
                 log_print("Unfortunately, you lose! You lasted " + str(turncount) + " turns.")
+                time.sleep(5)
                 break
 
 
@@ -165,6 +177,14 @@ while True:
                     turncount -= 1
                     continue
 
+            ns = ""
+            ew = ""
+            
+            if xchange == -1: ns = "north"        
+            if xchange == 1: ns = "south"        
+            if ychange == 1: ew = "east"        
+            if ychange == -1: ew = "west"        
+
         ### MAKE MOVE ###
 
             if(checkspace(x,y,grid) == "safe"):
@@ -182,7 +202,8 @@ while True:
                 turncount -= 1
                 continue
 
-
+            if bots:
+                log_print("On turn "+str(turncount)+", I move my head " + ns + ew + " to the space ("+str(x)+", "+str(y)+").")        
         ### HANDLE SPECIALS ###
             
             special_turn = False #Not yet used
@@ -240,7 +261,7 @@ while True:
         print_grid(grid)
     
         #if bots:
-        time.sleep(1)
+        time.sleep(6)
 
         if not checkPossible(opponentx, opponenty, grid):
             do_it = False # Don't bother if I can't move anywhere
@@ -250,6 +271,10 @@ while True:
             for j in range(-1,2):
                 if checkPossible((opponentx + i) % size, (opponenty + j) % size, grid):
                     canEscape = True
+
+        oppxchange = 0
+        oppychange = 0
+
 
         #for i in range (1000): # Should be enough to be decently sure no move is possible if it fails, and it will usually break early
         while do_it: # should always break early
@@ -278,11 +303,22 @@ while True:
         if not flag:
             print_grid(grid)
             log_print("You won! The opponent can't move. You won after: " + str(turncount) + " turns.")
+            time.sleep(5)
             break
+
+        ns = ""
+        ew = ""
         
+        if oppxchange == -1: ns = "north"        
+        if oppxchange == 1: ns = "south"        
+        if oppychange == 1: ew = "east"        
+        if oppychange == -1: ew = "west"        
+
+        log_print("On turn "+str(turncount)+", I move my head " + ns + ew + " to the space ("+str(opponentx)+", "+str(opponenty)+").")        
+
         print_grid(grid)
         if bots:
-            time.sleep(1)
+            time.sleep(6)
     a = log_input("Would you like to play again? (y/n) ")
     if (not (a.lower() == "y" or a.lower() == "yes")):
         log_print("Thanks for playing!")
